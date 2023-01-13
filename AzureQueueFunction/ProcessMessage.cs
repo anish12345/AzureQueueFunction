@@ -9,10 +9,17 @@ namespace AzureQueueFunction
     public class ProcessMessage
     {
         [FunctionName("ProcessMessage")]
-        public void Run([QueueTrigger("anishqueue", Connection = "anishconnection")]Order order, ILogger log)
+        [return: Table("Orders", Connection = "anishconnection")]
+        public TableOrder Run([QueueTrigger("anishqueue", Connection = "anishconnection")]Order order, ILogger log)
         {
-            log.LogInformation("Order Id {0}", order.OrderID);
-            log.LogInformation("Quantity {0}", order.Quantity);
+            TableOrder tableOrder = new TableOrder()
+            {
+                PartitionKey = order.OrderID,
+                RowKey = order.Quantity.ToString()
+            };
+
+            log.LogInformation("Order written to table");
+            return tableOrder;
         }
     }
 }
